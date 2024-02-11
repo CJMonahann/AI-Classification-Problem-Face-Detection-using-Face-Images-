@@ -8,18 +8,16 @@ def read_data():
 
     for dirpath, dirnames, files in os.walk('.', topdown=False):
 
+        if(dirpath != '.' and not dirpath.startswith('.\.git')):
 
-        #print(f'Found directory: {dirpath}')
+            print(dirpath)
 
-        if('m' in dirpath): #if the folder has the character 'm', the classifier is 'male', 'm'.
-            all_data_classifiers.append('m')
-        else: #if the folder has the character 'w', the classifier is 'woman', 'w'
-            all_data_classifiers.append('w')
-            
+            if('m' in dirpath): #if the folder has the character 'm', the classifier is 'male' as 0
+                all_data_classifiers.extend([0 for i in range(4)])
+            elif ('w' in dirpath): #if the folder has the character 'w', the classifier is 'woman' as 1
+                all_data_classifiers.extend([1 for i in range(4)])
 
-        if(dirpath != '.'):
             for file_name in files:
-                #print(file_name)
                 file_path = f"{dirpath}\{file_name}"
                 in_file = open(file_path, 'r')
                 directory_data = in_file.readlines() #reads all lines of data within a sample file and stores it in a list
@@ -29,15 +27,33 @@ def read_data():
     return all_data, all_data_classifiers
 
 def clean_data(data_list):
+
+    all_clean_list = []
+
     for file_data in data_list:
-        for file_element in file_data:
-            
-            print(file_element, "_______________________________")
+        single_file = []
+        fixed_file = file_data[3:]
+        fixed_file.pop()
+
+        for data in fixed_file:
+            temp_arr =  []
+            temp_data = data.strip("\n")
+            x_coord, y_coord = temp_data.split()
+            temp_arr.append(float(x_coord))
+            temp_arr.append(float(y_coord))
+            single_file.append(temp_arr)
+
+        all_clean_list.append(single_file)
+    
+    return all_clean_list
+
+def extract_features(feature_data):
+    pass
 
 def main():
     extracted_data, data_classifiers = read_data()
-    clean_data(extracted_data)
-
+    raw_files_data = clean_data(extracted_data)
+    extract_features(raw_files_data)
 
 if __name__ == "__main__":
     main()
