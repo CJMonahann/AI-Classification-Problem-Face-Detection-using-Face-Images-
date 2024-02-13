@@ -1,6 +1,7 @@
-import os, math
-# B:\SCSU\CSC-481-Artificial-Intelligence\HW1\Face Database\m-001
-# .\Face Database\m-001
+import os, math, numpy as np
+from sklearn import neighbors
+from sklearn.tree import DecisionTreeClassifier
+
 def read_data():
 
     all_data = [] #stores all sample data from all directories within the Face Database folder
@@ -137,6 +138,44 @@ def main():
     raw_files_data = clean_data(extracted_data)
     #use raw coordinate data to extract the features from each face sample
     total_data = extract_features(raw_files_data)
+
+    #list to be used to divide the total samples and classifiers for training and testing
+    training_data = []
+    training_targets = []
+
+    testing_data = []
+    testing_targets = []
+
+    data_size = len(total_data)
+    num_samples = 0 #to know when the third sample of each folder is reached (max num training samples)
+    for i in range(data_size):
+        if(num_samples < 3): #add the sample to training data
+            training_data.append(total_data[i])
+            training_targets.append(total_classifiers[i])
+            num_samples += 1
+        else: #add to testing data (to test created models)
+            testing_data.append(total_data[i])
+            testing_targets.append(total_classifiers[i])
+            num_samples = 0
+    
+    #train and test K-Nearest Neighbors Model
+    num_neighbors = 5
+    nn_model = neighbors.KNeighborsClassifier(num_neighbors)
+    nn_model.fit(training_data, training_targets) #train model
+    nn_prediction = nn_model.predict(testing_data)
+    print("** K-NEAREST NEIGHBORS TEST **")
+    print(f'K-Neighbors: {num_neighbors}')
+    print(f'Model Predicted Classes: {nn_prediction}')
+    print(f'True Data Classes: {testing_targets}', "\n")
+
+    
+    #train and test Decision Tree Model
+    dt_model = DecisionTreeClassifier()
+    dt_model.fit(training_data, training_targets)
+    dt_prediction = dt_model.predict(testing_data)
+    print("** DECISION TREE TEST **")
+    print(f'Model Predicted Classes: {dt_prediction}')
+    print(f'True Data Classes: {testing_targets}')
 
 if __name__ == "__main__":
     main()
