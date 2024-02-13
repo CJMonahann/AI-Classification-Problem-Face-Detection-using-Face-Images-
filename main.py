@@ -131,6 +131,42 @@ def euclidean_distance(point1, point2):
 
     return math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
 
+def calculate_stats(model, classifiers):
+    #create a dictionary to be used as a confusion matrix
+    confusion_matrix = {'true_male':0, 'mf_error':0, 'fm_error':0, 'true_female':0}
+
+    num_pred = len(model) #number of predicitons made by the model
+    #populate matrix by comparing model predicitons to their known-true classes
+    for i in range(num_pred):
+        if(model[i] == 0 and classifiers[i] == 0):
+            confusion_matrix['true_male'] += 1
+        elif(model[i] == 1 and classifiers[i] == 0):
+            confusion_matrix['mf_error'] += 1
+        elif(model[i] == 0 and classifiers[i] == 1):
+            confusion_matrix['fm_error'] += 1
+        elif(model[i] == 1 and classifiers[i] == 1):
+            confusion_matrix['true_female'] += 1
+    
+    #calculate accuracy
+    numerator = confusion_matrix['true_male'] + confusion_matrix['true_female']
+    denominator = num_pred
+    acc = (numerator / denominator) * 100
+    acc = format(acc, '.2f')
+
+    #calculate precision
+    prec_male = confusion_matrix['true_male'] / (confusion_matrix['true_male'] + confusion_matrix['fm_error'])
+    prec_female = confusion_matrix['true_female'] / (confusion_matrix['true_female'] + confusion_matrix['mf_error'])
+    prec = ((prec_male + prec_female) / 2 ) * 100
+    prec = format(prec, '.2f')
+
+    #calculate recall
+    rec_male = confusion_matrix['true_male'] / (confusion_matrix['true_male'] + confusion_matrix['mf_error'])
+    rec_female = confusion_matrix['true_female'] / (confusion_matrix['true_female'] + confusion_matrix['fm_error'])
+    rec = ((rec_male + rec_female) / 2) * 100
+    rec = format(rec, '.2f')
+
+    return acc, prec, rec
+
 def main():
     #read provided data from all files within their sub-directories
     extracted_data, total_classifiers = read_data()
@@ -163,19 +199,25 @@ def main():
     nn_model = neighbors.KNeighborsClassifier(num_neighbors)
     nn_model.fit(training_data, training_targets) #train model
     nn_prediction = nn_model.predict(testing_data)
-    print("** K-NEAREST NEIGHBORS TEST **")
-    print(f'K-Neighbors: {num_neighbors}')
-    print(f'Model Predicted Classes: {nn_prediction}')
-    print(f'True Data Classes: {testing_targets}', "\n")
+    nn_acc, nn_prec, nn_rec = calculate_stats(nn_prediction, testing_targets) #calculate required statistics
 
-    
     #train and test Decision Tree Model
     dt_model = DecisionTreeClassifier()
     dt_model.fit(training_data, training_targets)
     dt_prediction = dt_model.predict(testing_data)
-    print("** DECISION TREE TEST **")
+    dt_acc, dt_prec, dt_rec = calculate_stats(dt_prediction, testing_targets) #calculate required statistics
+    
+    #display results for both classification models
+    print("\t", "** K-NEAREST NEIGHBORS TEST **")
+    print(f'K-Neighbors: {num_neighbors}')
+    print(f'Model Predicted Classes: {nn_prediction}')
+    print(f'True Data Classes: {testing_targets}')
+    print(f'STATISTICS - Accuracy: {nn_acc}% | Precision: {nn_prec}% | Recall {nn_rec}%', "\n")
+
+    print("\t", "** DECISION TREE TEST **")
     print(f'Model Predicted Classes: {dt_prediction}')
     print(f'True Data Classes: {testing_targets}')
+    print(f'STATISTICS - Accuracy: {dt_acc}% | Precision: {dt_prec}% | Recall {dt_rec}%')
 
 if __name__ == "__main__":
     main()
