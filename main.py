@@ -131,6 +131,21 @@ def euclidean_distance(point1, point2):
 
     return math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
 
+def normalize_data(data):
+    normalized_data = []
+    
+    for sample in data:
+        new_features = []
+        sample_min = min(sample)
+        sample_max = max(sample)
+        for feature in sample:
+            norm_feature = (feature - sample_min) / (sample_max - sample_min)
+            formated_num = format(norm_feature, '.2f')
+            new_features.append(float(formated_num))
+        normalized_data.append(new_features)
+    
+    return normalized_data
+
 def calculate_stats(model, classifiers):
     #create a dictionary to be used as a confusion matrix
     confusion_matrix = {'true_male':0, 'mf_error':0, 'fm_error':0, 'true_female':0}
@@ -174,6 +189,8 @@ def main():
     raw_files_data = clean_data(extracted_data)
     #use raw coordinate data to extract the features from each face sample
     total_data = extract_features(raw_files_data)
+    #normalize data using min-max normalization
+    normalized_data = normalize_data(total_data)
 
     #list to be used to divide the total samples and classifiers for training and testing
     training_data = []
@@ -182,20 +199,20 @@ def main():
     testing_data = []
     testing_targets = []
 
-    data_size = len(total_data)
+    data_size = len(normalized_data)
     num_samples = 0 #to know when the third sample of each folder is reached (max num training samples)
     for i in range(data_size):
         if(num_samples < 3): #add the sample to training data
-            training_data.append(total_data[i])
+            training_data.append(normalized_data[i])
             training_targets.append(total_classifiers[i])
             num_samples += 1
         else: #add to testing data (to test created models)
-            testing_data.append(total_data[i])
+            testing_data.append(normalized_data[i])
             testing_targets.append(total_classifiers[i])
             num_samples = 0
     
     #train and test K-Nearest Neighbors Model
-    num_neighbors = 5
+    num_neighbors = 18
     nn_model = neighbors.KNeighborsClassifier(num_neighbors)
     nn_model.fit(training_data, training_targets) #train model
     nn_prediction = nn_model.predict(testing_data)
