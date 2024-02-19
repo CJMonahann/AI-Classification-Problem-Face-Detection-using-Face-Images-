@@ -2,6 +2,13 @@ import os, math, numpy as np
 from sklearn import neighbors
 from sklearn.tree import DecisionTreeClassifier
 
+'''
+Read data function that traverses the subfolders of a provided dataset folder and reads
+sample data into the program for later filtering and computations.
+Parameters: none
+Returned: a two dimensional array of all read-in sample data in string format | all 
+            classifiers for each of the samples wihthin the dataset: 0 = male, 1 = female
+'''
 def read_data():
 
     all_data = [] #stores all sample data from all directories within the Face Database folder
@@ -25,6 +32,14 @@ def read_data():
     
     return all_data, all_data_classifiers
 
+'''
+Clean data function that converts read-in string data from dataset files to 
+float data for later computations.
+Parameters: a two dimensional array of string data read-in from each file
+            within a given dataset.
+Returned: a two dimensional string array of the coordinate points extracted
+            from each sample file from a given dataset.
+'''
 def clean_data(data_list):
 
     all_clean_list = []
@@ -46,6 +61,14 @@ def clean_data(data_list):
     
     return all_clean_list
 
+'''
+Feature extraction function that takes sample coordinate data and creates seven
+features per sample. 
+Parameters: a two dimensional array that contains all coordinate data points for
+            all samples.
+Returned: a two dimensional array of all feature data for each sample within the 
+            given dataset.
+'''
 def extract_features(coord_data):
 
     all_features = []
@@ -122,6 +145,12 @@ def extract_features(coord_data):
 
     return all_features
 
+'''
+Euclidean distance function that uses the euclidean distance formula to 
+calculate the distance between two points on a cartesian plane.
+Parameters: two arrays that represent (x,y) coordinate points in the format: [x_num,y_num]
+Returned: the calculated euclidean distance between two points. 
+'''
 def euclidean_distance(point1, point2):
     x1 = point1[0]
     y1 = point1[1]
@@ -131,6 +160,12 @@ def euclidean_distance(point1, point2):
 
     return math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
 
+'''
+Data normalization function that uses the min-max normalization formula to 
+convert feature data to values within the interval: [0,1].
+Parameters: feature data
+Returned: normalized data derived from the feature data.
+'''
 def normalize_data(data):
     normalized_data = []
     
@@ -146,6 +181,12 @@ def normalize_data(data):
     
     return normalized_data
 
+'''
+Creates a confusion matrix of the true male/female classes versus a model's predicted classification.
+The confusion matrix is used to calculate the accuracy, precision, and recall had by a model.
+Parameters: a trained classificaion model | known test-classifier data
+Returned: model's accuracy, precision, and recall.
+'''
 def calculate_stats(model, classifiers):
     #create a dictionary to be used as a confusion matrix
     confusion_matrix = {'true_male':0, 'mf_error':0, 'fm_error':0, 'true_female':0}
@@ -182,6 +223,11 @@ def calculate_stats(model, classifiers):
 
     return acc, prec, rec
 
+'''
+Main program function in which the program's logic is ran.
+Parameters: none
+Returned: none
+'''
 def main():
     #read provided data from all files within their sub-directories
     extracted_data, total_classifiers = read_data()
